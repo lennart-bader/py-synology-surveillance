@@ -1,13 +1,13 @@
 from distutils.core import setup
 
 setup(
-    name='py-synology',
-    version='0.4.0',
-    packages=['synology'],
-    url='https://github.com/snjoetw/py-synology',
+    name='py-synology-surveillance',
+    version='1.0.0',
+    packages=['synology_surveillance'],
+    url='https://github.com/lennart-bader/py-synology-surveillance',
     license='MIT',
-    author='snjoetw',
-    author_email='snjoetw@gmail.com',
+    author='Lennart Bader',
+    author_email='mail+github@lbader.de',
     description='Python API for Synology Surveillance Station',
     requires=['requests']
 )

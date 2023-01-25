@@ -1,63 +1,17 @@
 """Python Synology SurveillanceStation API wrapper."""
+import json
+from typing import List
 import urllib
 
 import requests
 
-
-ERROR_CODE_SESSION_EXPIRED = 105
-
-BASE_API_INFO = {
-    'auth': {
-        'name': 'SYNO.API.Auth',
-        'version': 2
-    },
-    'camera': {
-        'name': 'SYNO.SurveillanceStation.Camera',
-        'version': 1
-    },
-    'camera_event': {
-        'name': 'SYNO.SurveillanceStation.Camera.Event',
-        'version': 1
-    },
-    'video_stream': {
-        'name': 'SYNO.SurveillanceStation.VideoStream',
-        'version': 1
-    },
-    'home_mode': {
-        'name': 'SYNO.SurveillanceStation.HomeMode',
-        'version': 1
-    },
-    'snapshot': {
-        'name': 'SYNO.SurveillanceStation.SnapShot',
-        'version': 1
-    },
-}
-
-API_NAMES = [api['name'] for api in BASE_API_INFO.values()]
-
-RECORDING_STATUS = [
-    # Continue recording schedule
-    1,
-    # Motion detect recording schedule
-    2,
-    # Digital input recording schedule
-    3,
-    # Digital input recording schedule
-    4,
-    # Manual recording schedule
-    5]
-MOTION_DETECTION_SOURCE_DISABLED = -1
-MOTION_DETECTION_SOURCE_BY_CAMERA = 0
-MOTION_DETECTION_SOURCE_BY_SURVEILLANCE = 1
-
-HOME_MODE_ON = "true"
-HOME_MODE_OFF = "false"
-
-SNAPSHOT_SIZE_ICON = 1
-SNAPSHOT_SIZE_FULL = 2
+from synology_surveillance.constants import API_NAMES, BASE_API_INFO, ERROR_CODE_SESSION_EXPIRED, HOME_MODE_OFF, HOME_MODE_ON
+from synology_surveillance.entities.camera import Camera
+from synology_surveillance.entities.motion_setting import MotionSetting
+from synology_surveillance.session_expired_exception import SessionExpiredException
 
 
-class Api:
+class SynologyApi:
     """An implementation of a Synology SurveillanceStation API."""
 
     def __init__(self, url, username, password, timeout=10, verify_ssl=True):
@@ -76,11 +30,11 @@ class Api:
     def _initialize_api_info(self, **kwargs):
         payload = dict({
             'api': 'SYNO.API.Info',
-            'method': 'Query',
+            'method': 'query',
             'version': '1',
             'query': ','.join(API_NAMES),
         }, **kwargs)
-        response = self._get_json_with_retry(self._base_url + 'query.cgi',
+        response = self._get_json_with_retry(self._base_url + 'entry.cgi',
                                              payload)
 
         self._api_info = BASE_API_INFO
@@ -92,7 +46,7 @@ class Api:
         api = self._api_info['auth']
         payload = dict({
             'api': api['name'],
-            'method': 'Login',
+            'method': 'login',
             'version': api['version'],
             'account': self._username,
             'passwd': self._password,
@@ -139,7 +93,7 @@ class Api:
 
         return response['data']['on']
 
-    def camera_list(self, **kwargs):
+    def camera_list(self, **kwargs) -> List[Camera]:
         """Return a list of cameras."""
         api = self._api_info['camera']
         payload = dict({
@@ -153,6 +107,7 @@ class Api:
         cameras = []
 
         for data in response['data']['cameras']:
+            print(json.dumps(data, indent=4))
             cameras.append(Camera(data, self._video_stream_url))
 
         return cameras
@@ -168,6 +123,7 @@ class Api:
             'cameraIds': ', '.join(str(id) for id in camera_ids),
         }, **kwargs)
         response = self._get_json_with_retry(api['url'], payload)
+        print(json.dumps(response, indent=4))
 
         cameras = []
 
@@ -279,6 +235,14 @@ class Api:
 
         return response['data']['camId']
 
+    def camera_start_recording(self, camera_id, **kwargs):
+        """Start a manual recording for the given camera_id"""
+        pass
+
+    def camera_stop_recording(self, camera_id, **kwargs):
+        """Stop a (manual) recording for the given camera_id"""
+        pass
+
     def _video_stream_url(self, camera_id, video_format='mjpeg'):
         api = self._api_info['video_stream']
 
@@ -318,63 +282,3 @@ class Api:
             raise ValueError('Invalid or failed response', content)
 
         return content
-
-
-class Camera:
-    """An representation of a Synology SurveillanceStation camera."""
-
-    def __init__(self, data, video_stream_url_provider):
-        """Initialize a Surveillance Station camera."""
-        self._camera_id = data['id']
-        self._name = data['name']
-        self._is_enabled = data['enabled']
-        self._recording_status = data['recStatus']
-        self._video_stream_url = video_stream_url_provider(self.camera_id)
-
-    @property
-    def camera_id(self):
-        """Return id of the camera."""
-        return self._camera_id
-
-    @property
-    def name(self):
-        """Return name of the camera."""
-        return self._name
-
-    @property
-    def video_stream_url(self):
-        """Return video stream url of the camera."""
-        return self._video_stream_url
-
-    @property
-    def is_enabled(self):
-        """Return true if camera is enabled."""
-        return self._is_enabled
-
-    @property
-    def is_recording(self):
-        """Return true if camera is recording."""
-        return self._recording_status in RECORDING_STATUS
-
-
-class MotionSetting:
-    """An representation of a Synology SurveillanceStation motion setting."""
-
-    def __init__(self, camera_id, data):
-        """Initialize a Surveillance Station motion setting."""
-        self._camera_id = camera_id
-        self._source = data['source']
-
-    @property
-    def camera_id(self):
-        """Return id of the camera."""
-        return self._camera_id
-
-    @property
-    def is_enabled(self):
-        """Return true if motion detection is enabled."""
-        return MOTION_DETECTION_SOURCE_DISABLED != self._source
-
-
-class SessionExpiredException(Exception):
-    """An error indicating session expired."""

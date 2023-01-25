@@ -1,20 +1,25 @@
 """Python Synology SurveillanceStation wrapper."""
-from synology.api import (
-    Api, MOTION_DETECTION_SOURCE_BY_SURVEILLANCE,
+from typing import List
+from synology_surveillance.api.synology_api import SynologyApi
+from synology_surveillance.constants import (
+    MOTION_DETECTION_SOURCE_BY_SURVEILLANCE,
     MOTION_DETECTION_SOURCE_DISABLED,
-    HOME_MODE_ON, HOME_MODE_OFF)
+    HOME_MODE_ON, 
+    HOME_MODE_OFF
+)
+from synology_surveillance.entities.camera import Camera
 
 
 class SurveillanceStation:
     """An implementation of a Synology SurveillanceStation."""
 
-    def __init__(self, url, username, password, timeout=10, verify_ssl=True):
+    def __init__(self, url, username, password, timeout=10, verify_ssl=True, auto_update: bool = True):
         """Initialize a Surveillance Station."""
-        self._api = Api(url, username, password, timeout, verify_ssl)
+        self._api = SynologyApi(url, username, password, timeout, verify_ssl)
         self._cameras_by_id = None
         self._motion_settings_by_id = None
-
-        self.update()
+        if auto_update:
+            self.update()
 
     def update(self):
         """Update cameras and motion settings with latest from API."""
@@ -29,7 +34,7 @@ class SurveillanceStation:
         self._motion_settings_by_id = {
             v.camera_id: v for i, v in enumerate(motion_settings)}
 
-    def get_all_cameras(self):
+    def get_all_cameras(self) -> List[Camera]:
         """Return a list of cameras."""
         return self._cameras_by_id.values()
 

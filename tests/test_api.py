@@ -4,7 +4,7 @@ import unittest
 
 import requests_mock
 
-from synology.api import Api
+from synology_surveillance.synology_api import SynologyApi
 
 BASE_URL = "http://192.168.1.8:5000"
 QUERY_URL = BASE_URL + "/webapi/query.cgi"
@@ -41,7 +41,7 @@ class TestApi(unittest.TestCase):
     def test_cameras(self, mock):
         """Test the Canary senskor class and methods."""
         _setup_responses(mock)
-        api = Api(BASE_URL, "user", "pass")
+        api = SynologyApi(BASE_URL, "user", "pass")
         cameras = api.camera_list()
 
         self.assertEqual(2, len(cameras))

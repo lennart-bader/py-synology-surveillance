@@ -1,0 +1,10 @@
+README.md
+setup.py
+py_synology_surveillance.egg-info/PKG-INFO
+py_synology_surveillance.egg-info/SOURCES.txt
+py_synology_surveillance.egg-info/dependency_links.txt
+py_synology_surveillance.egg-info/top_level.txt
+synology_surveillance/__init__.py
+synology_surveillance/constants.py
+synology_surveillance/session_expired_exception.py
+synology_surveillance/surveillance_station.py

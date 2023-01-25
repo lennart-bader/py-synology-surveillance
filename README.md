@@ -1,17 +1,17 @@
-# py-synology [![Build Status](https://travis-ci.org/snjoetw/py-synology.svg?branch=master)](https://travis-ci.org/snjoetw/py-synology)
-Python API for Synology Surveillance Station.  This is used in [Home Assistant](https://home-assistant.io) but should be generic enough that can be used elsewhere.
+# py-synology-surveillance
+Python API for Synology Surveillance Station based on [py-synology](https://github.com/snjoetw/py-synology).
 
 
 ## Install
 
 ```bash
-pip install py-synology
+pip install py-synology-surveillance
 ```
 
 
 ## Usage
 ```python
-from synology.surveillance_station import SurveillanceStation
+from synology_surveillance.surveillance_station import SurveillanceStation
 
 # Synology API url
 api_url = 'https://localhost:5001'

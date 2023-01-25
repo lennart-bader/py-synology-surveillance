@@ -1,0 +1,11 @@
+Metadata-Version: 1.1
+Name: py-synology-surveillance
+Version: 1.0.0
+Summary: Python API for Synology Surveillance Station
+Home-page: https://github.com/lennart-bader/py-synology-surveillance
+Author: Lennart Bader
+Author-email: mail+github@lbader.de
+License: MIT
+Description: UNKNOWN
+Platform: UNKNOWN
+Requires: requests
